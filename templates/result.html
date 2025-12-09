@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Prediction Result{% endblock %}
+{% block content %}
+  <div class="container mt-5">
+    <h3>Prediction Result</h3>
+    <div class="alert alert-success">Predicted Premium: <strong>{{ prediction }}</strong></div>
+    <a href="/" class="btn btn-primary">Back</a>
+  </div>
+{% endblock %}

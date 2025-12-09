@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block title %}Insurance Premium Predictor{% endblock %}
+
+{% block content %}
+<style>
+  .page-wrapper {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+  }
+  .left-banner {
+    background: linear-gradient(135deg, #0061ff, #60efff);
+    color: #fff;
+    padding: 3rem;
+    border-radius: 20px;
+  }
+  .banner-title {
+    font-size: 2.3rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .banner-sub {
+    font-size: 1rem;
+    opacity: .95;
+    margin-top: .6rem;
+  }
+  .illustration {
+    width: 100%;
+    max-width: 420px;
+  }
+  .form-card {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+  .result-box {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0a6b3f;
+  }
+</style>
+
+<div class="container page-wrapper">
+  <div class="row w-100 g-4">
+    
+    <!-- Left Banner -->
+    <div class="col-lg-5">
+      <div class="left-banner shadow-lg text-center">
+        <h1 class="banner-title">Predict Your<br>Insurance Premium</h1>
+        <p class="banner-sub">Accurate estimates powered by healthcare analytics</p>
+        <img class="illustration mt-4" src="https://cdn-icons-png.flaticon.com/512/2950/2950747.png">
+      </div>
+    </div>
+
+    <!-- Form Area -->
+    <div class="col-lg-7">
+      <div class="card p-4 form-card">
+        <h4 class="fw-semibold mb-3 text-primary">Enter Health Information</h4>
+
+        <form id="predictForm">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Age</label>
+              <input type="number" class="form-control" name="Age" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Height (cm)</label>
+              <input type="number" class="form-control" name="Height" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Weight (kg)</label>
+              <input type="number" class="form-control" name="Weight" required>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-md-4">
+              <label class="form-label">Diabetes</label>
+              <select class="form-select" name="Diabetes">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">BP Problems</label>
+              <select class="form-select" name="BloodPressureProblems">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Chronic Diseases</label>
+              <select class="form-select" name="AnyChronicDiseases">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-md-4">
+              <label class="form-label">Transplants</label>
+              <select class="form-select" name="AnyTransplants">
+                <option value="0" selected>No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Allergies</label>
+              <select class="form-select" name="KnownAllergies">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Cancer in Family</label>
+              <select class="form-select" name="HistoryOfCancerInFamily">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-md-4">
+              <label class="form-label">Major Surgeries</label>
+              <input type="number" class="form-control" name="NumberOfMajorSurgeries" min="0" value="0">
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary px-4">Predict</button>
+            <button type="button" class="btn btn-outline-danger px-4" id="resetBtn">Reset</button>
+          </div>
+        </form>
+
+        <div class="mt-4">
+          <div id="feedback" class="alert d-none"></div>
+          <div id="result" class="result-box"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('predictForm');
+  const feedback = document.getElementById('feedback');
+  const resultEl = document.getElementById('result');
+
+  function showFeedback(text, cls='alert-info'){
+    feedback.className = 'alert ' + cls;
+    feedback.textContent = text;
+    feedback.classList.remove('d-none');
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    showFeedback('Calculating...', 'alert-warning');
+    resultEl.textContent = '';
+
+    const fd = new FormData(form);
+    const payload = Object.fromEntries([...fd].map(([k,v])=>[k, Number(v)]));
+
+    try{
+      const resp = await fetch('/predict',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      if(!resp.ok) throw new Error(resp.status);
+      const data = await resp.json();
+      showFeedback('Prediction Successful','alert-success');
+      resultEl.textContent = "Premium Estimate: ₹ " + data.prediction;
+    }catch(err){
+      showFeedback('Failed: '+err.message,'alert-danger');
+    }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    form.reset();
+    resultEl.textContent='';
+    feedback.classList.add('d-none');
+  });
+</script>
+{% endblock %}

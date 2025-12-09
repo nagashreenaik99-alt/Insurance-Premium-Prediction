@@ -1,0 +1,16 @@
+
+Flask @ file:///C:/b/abs_28dbmjidmh/croot/flask_1756453142071/work
+ipykernel @ file:///D:/bld/bld/rattler-build_ipykernel_1761567966/work
+matplotlib==3.10.7
+matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1761214490209/work
+mysql-connector-python @ file:///D:/bld/mysql-connector-python_1756686222702/work/mysql-connector-python
+
+numpy==2.3.5
+packaging @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_packaging_1745345660/work
+pandas==2.3.3
+
+
+scikit-learn==1.7.2
+scipy==1.16.3
+seaborn==0.13.2
+

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Predict — Insurance Premium{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="card-title mb-3">Predict Insurance Premium</h3>
+    <p class="text-muted">Fill the form and click <strong>Predict</strong>. The form posts to <code>/predict</code>.</p>
+
+    {%- if prediction is defined %}
+    <div class="alert alert-success">Server prediction: <strong>{{ prediction }}</strong></div>
+    {%- endif %}
+
+    <form id="predictForm" method="post" action="/predict">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <label class="form-label">Age</label>
+              <input type="number" class="form-control" name="Age" placeholder="e.g. 36" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Height (cm)</label>
+              <input type="number" class="form-control" name="Height" placeholder="e.g. 170" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Weight (kg)</label>
+              <input type="number" class="form-control" name="Weight" placeholder="e.g. 70" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Number of Major Surgeries</label>
+              <input type="number" class="form-control" name="NumberOfMajorSurgeries" placeholder="e.g. 0" min="0" required />
+            </div>
+          </div>
+
+          <div class="row g-2 mt-2">
+            <div class="col-md-4">
+              <label class="form-label">Diabetes</label>
+              <select class="form-select" name="Diabetes">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Blood Pressure Problems</label>
+              <select class="form-select" name="BloodPressureProblems">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Any Chronic Diseases</label>
+              <select class="form-select" name="AnyChronicDiseases">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-2 mt-2">
+            <div class="col-md-4">
+              <label class="form-label">Any Transplants</label>
+              <select class="form-select" name="AnyTransplants">
+                <option value="0" selected>No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Known Allergies</label>
+              <select class="form-select" name="KnownAllergies">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">History Of Cancer In Family</label>
+              <select class="form-select" name="HistoryOfCancerInFamily">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary" id="predictBtn">Predict</button>
+            <button type="button" class="btn btn-outline-secondary" id="resetBtn">Reset</button>
+          </div>
+        </form>
+
+        <div class="mt-4">
+          <div id="feedback" class="alert d-none" role="alert"></div>
+          <div id="result" class="result"></div>
+        </div>
+      </div>
+      <div class="card-footer text-muted small">If no backend exists at <code>/predict</code>, the request will fail — ensure the Flask app is running.</div>
+    </div>
+
+    <script>
+      const form = document.getElementById('predictForm');
+      const feedback = document.getElementById('feedback');
+      const resultEl = document.getElementById('result');
+
+      function showFeedback(text, cls='alert-info'){
+        feedback.className = 'alert ' + cls;
+        feedback.textContent = text;
+        feedback.classList.remove('d-none');
+      }
+
+      // Intercept submit to send JSON and display inline; fallback uses form POST
+      form.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        resultEl.textContent = '';
+        showFeedback('Sending request...', 'alert-info');
+
+        const fd = new FormData(form);
+        const payload = {
+          Age: Number(fd.get('Age')),
+          Diabetes: Number(fd.get('Diabetes')),
+          BloodPressureProblems: Number(fd.get('BloodPressureProblems')),
+          AnyTransplants: Number(fd.get('AnyTransplants')),
+          AnyChronicDiseases: Number(fd.get('AnyChronicDiseases')),
+          Height: Number(fd.get('Height')),
+          Weight: Number(fd.get('Weight')),
+          KnownAllergies: Number(fd.get('KnownAllergies')),
+          HistoryOfCancerInFamily: Number(fd.get('HistoryOfCancerInFamily')),
+          NumberOfMajorSurgeries: Number(fd.get('NumberOfMajorSurgeries'))
+        };
+
+        try{
+          const resp = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if(!resp.ok) throw new Error('Server returned ' + resp.status);
+          const data = await resp.json();
+          showFeedback('Prediction received', 'alert-success');
+          resultEl.textContent = 'Predicted Premium: ' + (data.prediction ?? JSON.stringify(data));
+        }catch(err){
+          showFeedback('Request failed: ' + err.message, 'alert-danger');
+        }
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', ()=>{
+        form.reset();
+        resultEl.textContent = '';
+        feedback.classList.add('d-none');
+      });
+    </script>
+  </div>
+</div>
+{% endblock %}
