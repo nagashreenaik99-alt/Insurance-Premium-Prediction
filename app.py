@@ -62,9 +62,7 @@ def predict_score(Age=36,Diabetes=1,BloodPressureProblems=0,AnyTransplants=0,Any
 @app.route('/')
 def home():
     # If user is logged in, show prediction page; otherwise show login first
-    if 'username' in session:
-        return render_template('prediction.html')
-    return render_template('login.html')
+    return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -140,11 +138,11 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    if 'username' in session:
-        return render_template('dashboard.html', username=session['username'])
-    else:
-        flash('Please log in to access the dashboard', 'warning')
-        return redirect(url_for('login'))
+    # if 'username' in session:
+    return render_template('dashboard.html')
+    # else:
+    #     flash('Please log in to access the dashboard', 'warning')
+    #     return redirect(url_for('login'))
 
 
 @app.route('/logout')
@@ -152,14 +150,15 @@ def logout():
     session.pop('username', None)
     flash('Logged out', 'info')
     return redirect(url_for('home'))
+
 @app.route('/predict',methods=['GET','POST'])
 def predict():
     # Block access if not logged in
-    if 'username' not in session:
-        if request.method == 'POST' and request.is_json:
-            return (jsonify({'message':'Authentication required'}), 401)
-        flash('Please log in to make predictions', 'warning')
-        return redirect(url_for('login'))
+    # if 'username' not in session:
+    #     if request.method == 'POST' and request.is_json:
+    #         return (jsonify({'message':'Authentication required'}), 401)
+    #     flash('Please log in to make predictions', 'warning')
+    #     return redirect(url_for('login'))
 
     if request.method == 'POST':
         # support JSON payloads (from index.html) or form submissions
